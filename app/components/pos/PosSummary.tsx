@@ -52,7 +52,6 @@ export default function PosSummary({
                 <ButtonCheckOut 
                     subTotal={subTotalFormateado} 
                     items={itemsParaCheckout} 
-                    idCaja={1} 
                     onClearCart={vaciarCarrito} 
                 />
             </div>
