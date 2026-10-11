@@ -23,8 +23,14 @@ export default function AddProductModal({
     onOpenCategoryModal 
 }: AddProductModalProps) {
     
-    // El hook maneja la conexión con el servidor
-    const { loading, handleSubmit } = useAddProduct(onClose, onSuccess)
+    // Extraemos todo lo nuevo de tu hook
+    const { 
+        loading, handleSubmit,
+        codigoBarras, setCodigoBarras,
+        nombre, setNombre,
+        isScannerOpen, openScanner, closeScanner,
+        handleBarcodeScanned, buscandoEnInternet
+    } = useAddProduct(onClose, onSuccess)
 
     if (!isOpen) return null
 
@@ -43,6 +49,16 @@ export default function AddProductModal({
                     loading={loading}
                     categorias={categorias}
                     onOpenCategoryModal={onOpenCategoryModal}
+                    // 👇 Inyectamos las nuevas props para el escáner y la API
+                    codigoBarras={codigoBarras}
+                    setCodigoBarras={setCodigoBarras}
+                    nombre={nombre}
+                    setNombre={setNombre}
+                    isScannerOpen={isScannerOpen}
+                    openScanner={openScanner}
+                    closeScanner={closeScanner}
+                    handleBarcodeScanned={handleBarcodeScanned}
+                    buscandoEnInternet={buscandoEnInternet}
                 />
                 
             </Card>
