@@ -1,6 +1,7 @@
 import { Button, Flex, TextField, Text } from "@radix-ui/themes"
-import { Save, PlusCircle, Loader2 } from "lucide-react"
+import { Save, PlusCircle, Loader2, ScanLine } from "lucide-react"
 import { Categoria } from "./EditProductModal" // Ajustá esta ruta
+import BarcodeScanner from "./BarCodeScaner" // Ajustá esta ruta si es distinta
 
 interface AddProductFormProps {
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
@@ -8,40 +9,80 @@ interface AddProductFormProps {
     loading: boolean
     categorias: Categoria[]
     onOpenCategoryModal: () => void
+    
+    // 👇 Nuevas props que vienen de tu hook useAddProduct
+    codigoBarras: string
+    setCodigoBarras: (val: string) => void
+    nombre: string
+    setNombre: (val: string) => void
+    isScannerOpen: boolean
+    openScanner: () => void
+    closeScanner: () => void
+    handleBarcodeScanned: (code: string) => void
+    buscandoEnInternet: boolean
 }
 
 export default function AddProductForm({ 
-    handleSubmit, onClose, loading, categorias, onOpenCategoryModal 
+    handleSubmit, onClose, loading, categorias, onOpenCategoryModal,
+    codigoBarras, setCodigoBarras, nombre, setNombre, isScannerOpen, 
+    openScanner, closeScanner, handleBarcodeScanned, buscandoEnInternet
 }: AddProductFormProps) {
-    console.log("Categorías que recibe el form:", categorias)
+    
     return (
         <form onSubmit={handleSubmit} className="flex flex-col">
             {/* --- CUERPO --- */}
             <div className="p-6 flex flex-col gap-5 max-h-[65vh] overflow-y-auto">
+                
+                {/* 👇 CÓDIGO DE BARRAS + BOTÓN ESCÁNER */}
+                <div className="flex gap-2 items-end">
+                    <div className="grow">
+                        <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">Código de Barras *</Text>
+                        <TextField.Root 
+                            name="codigoBarras" 
+                            required 
+                            value={codigoBarras}
+                            onChange={(e) => setCodigoBarras(e.target.value)}
+                            placeholder="Ej: 779123456789" 
+                            size="3" 
+                            radius="large"
+                            disabled={loading || buscandoEnInternet} 
+                            className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
+                        />
+                    </div>
+                    <Button 
+                        type="button" 
+                        size="3" 
+                        variant="soft" 
+                        onClick={openScanner}
+                        disabled={loading || buscandoEnInternet}
+                        className="cursor-pointer bg-[#33589c]/10 text-[#33589c] hover:bg-[#33589c]/20 px-3"
+                        style={{ height: '40px' }} // Para que mida lo mismo que el TextField
+                        title="Escanear producto"
+                    >
+                        <ScanLine size={20} />
+                    </Button>
+                </div>
+
+                {/* 👇 NOMBRE (Ahora controlado y se desactiva si está buscando) */}
                 <div>
                     <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">Nombre del Producto *</Text>
                     <TextField.Root 
                         name="nombre" 
                         required 
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
                         placeholder="Ej: Alfajor Guaymallén" 
                         size="3" 
                         radius="large"
-                        disabled={loading} 
+                        disabled={loading || buscandoEnInternet} 
                         className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
-                    />
-                </div>
-
-                <div>
-                    <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">Código de Barras *</Text>
-                    <TextField.Root 
-                        name="codigoBarras" 
-                        required 
-                        placeholder="Ej: 779123456789" 
-                        size="3" 
-                        radius="large"
-                        disabled={loading} 
-                        className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
-                    />
+                    >
+                        {buscandoEnInternet && (
+                            <TextField.Slot side="right">
+                                <Loader2 size={16} className="animate-spin text-gray-400" />
+                            </TextField.Slot>
+                        )}
+                    </TextField.Root>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-5">
@@ -148,6 +189,14 @@ export default function AddProductForm({
                     </Button>
                 </Flex>
             </div>
+
+            {/* 👇 EL MODAL DE LA CÁMARA */}
+            {isScannerOpen && (
+                <BarcodeScanner 
+                    onScanSuccess={handleBarcodeScanned}
+                    onClose={closeScanner}
+                />
+            )}
         </form>
     )
 }
