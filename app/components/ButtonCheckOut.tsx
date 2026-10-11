@@ -1,25 +1,26 @@
 "use client"
 import { Dialog, Button, Flex, IconButton } from "@radix-ui/themes"   
 import { Wallet, X, CheckCircle2 } from "lucide-react"
-import { useCheckout } from "@/app/hooks/useCheckOut" // Ajustá la ruta
+import { useCheckout } from "@/app/hooks/useCheckOut" 
 
+// 1. Ajustamos los nombres para que coincidan con Node.js
 interface CartItem {
-    idProducto: string
+    id_producto: string
     cantidad: number
-    precioUnitario: number
+    precio: number
 }
 
 interface ButtonCheckOutProps {
     subTotal: string
-    items: CartItem[] 
-    idCaja?: number    
+    items: CartItem[]   
     onClearCart: () => void
 }
 
+// 2. Ajustamos "qr/mercadoPago" para que sea EXACTAMENTE igual a tu base de datos
 const PAYMENT_METHODS = [
     { key: "efectivo", label: "💵 Efectivo" },
     { key: "cuentaDni", label: "🔵 Cuenta DNI" },
-    { key: "qr/mercadopago", label: "📱 QR / Mercado Pago" },
+    { key: "qr/mercadoPago", label: "📱 QR / Mercado Pago" }, 
     { key: "transferencia", label: "🏦 Transferencia (Alias)" },
     { key: "tarjeta", label: "💳 Tarjeta" },
 ]
@@ -55,7 +56,6 @@ export default function ButtonCheckOut({ subTotal, items, onClearCart }: ButtonC
                 </Button>
             </Dialog.Trigger>
 
-            {/* --- CONTENEDOR DEL MODAL ESTILO PREMIUM --- */}
             <Dialog.Content maxWidth="400px" className="!p-0 border border-gray-300 dark:border-gray-700 shadow-2xl rounded-2xl bg-white dark:bg-gray-900 overflow-hidden font-sans">
                 
                 {/* --- HEADER --- */}
@@ -88,14 +88,15 @@ export default function ButtonCheckOut({ subTotal, items, onClearCart }: ButtonC
 
                     <Flex direction="column" gap="3">
                         {PAYMENT_METHODS.map((method) => {
-                            const isThisLoading = loading && selectedMethod === method.label
+                            const isThisLoading = loading && selectedMethod === method.key
                             return (
                                 <Button 
                                     key={method.key}
                                     size="3" 
                                     variant="outline" 
                                     disabled={loading}
-                                    onClick={() => handleCompleteSale(method.label, items.length)}
+                                    /* 3. ¡Acá estaba el bug! Ahora mandamos method.key */
+                                    onClick={() => handleCompleteSale(method.key, items)}
                                     className={`cursor-pointer justify-start px-4 h-12 font-semibold transition-all ${
                                         isThisLoading 
                                             ? 'bg-[#589c33] text-white border-[#589c33]' 

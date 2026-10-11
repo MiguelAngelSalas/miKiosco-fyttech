@@ -3,65 +3,120 @@
 import { redirect } from "next/navigation"
 import {cookies} from "next/headers"
 
-const API_URL = process.env.API_RENDER|| "https://metodologias-agiles-proyecto-backend.onrender.com"
+const API_URL = process.env.NEW_API_URL
 
-export async function registerUserAction(formData: FormData) {
+export async function registerAdminAction(formData: FormData) {
+    // 1. Capturamos todos los campos del nuevo formulario
+    const nombre_local = formData.get("nombre_local")?.toString().trim()
     const nombre = formData.get("nombre")?.toString().trim()
+    const apellido = formData.get("apellido")?.toString().trim()
+    const email = formData.get("email")?.toString().trim()
+    const telefono = formData.get("telefono")?.toString().trim()
     const password = formData.get("password")?.toString()
-    const rolString = formData.get("rol")?.toString()
+    const rol = formData.get("rol")?.toString() || "administrador"
 
-    if (!nombre || !password) {
-        return { error: "Completá el nombre de usuario y la contraseña." }
+    // 2. Validación básica
+    if (!nombre_local || !nombre || !apellido || !email || !telefono || !password) {
+        return { error: "Faltan completar campos obligatorios." }
     }
 
-    const rol = rolString !== undefined ? parseInt(rolString, 10) : 0
-
     const payload = {
+        nombre_local,
         nombre,
+        apellido,
+        email,
+        telefono,
         password,
         rol,
     }
 
-    const cookieStore = await cookies()
-    const token = cookieStore.get("kiosco_token")?.value
-    console.log("Token recuperado de la cookie:", token)
-    console.log("Header de autorización armado:", `Bearer ${token}`)
-
-    if(!token){
-        return {error: "No estas autorizado o tu sesion expiro"}
-    }
+    // Eliminamos la validación de cookies/token porque esto es un registro público (Sign Up)
 
     try {
-        // Endpoint exacto de tu Swagger
-        const res = await fetch(`${API_URL}/api/Auth/createUser`, {
+        // Apuntamos al nuevo endpoint de Node.js
+        const res = await fetch(`${API_URL}/api/usuarios/registro`, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+                // Sin Authorization header acá
+            },
+            body: JSON.stringify(payload),
+            cache: 'no-store' 
+        })
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => null)
+            const errorMsg = data?.error || data?.message || `Error del servidor (${res.status})`
+            return { error: errorMsg }
+        }
+
+        // Corregido el typo de "succes" a "success"
+        return { success: true }
+        
+    } catch (err: any) {
+        return {
+            error: "No se pudo conectar con el servidor. Revisá que Node.js esté corriendo.",
+        }
+    }
+}
+
+export async function registerEmployeeAction(formData: FormData) {
+    // 1. Capturamos los datos del modal (acordate que sumamos el apellido)
+    const nombre = formData.get("nombre")?.toString().trim()
+    const apellido = formData.get("apellido")?.toString().trim()
+    const email = formData.get("email")?.toString().trim() // <-- ¡Agregado!
+    const password = formData.get("password")?.toString()
+    const rol = formData.get("rol")?.toString()
+
+    if (!nombre || !apellido || !password || !rol || !email) {
+        return { error: "Completá todos los campos obligatorios." }
+    }
+
+    
+
+    // 3. RECUPERAMOS EL TOKEN (La diferencia clave con el registro del dueño)
+    const cookieStore = await cookies()
+    const token = cookieStore.get("kiosco_token")?.value
+
+    if (!token) {
+        return { error: "No estás autorizado o tu sesión expiró. Volvé a iniciar sesión." }
+    }
+
+    const payload = { nombre, apellido, email, password, rol }
+
+    try {
+        // 4. Apuntamos al endpoint PROTEGIDO de Node.js
+        const res = await fetch(`${API_URL}/api/usuarios/empleado`, {
             method: "POST",
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token.trim()}` // El trim() borra cualquier espacio invisible
+                "Authorization": `Bearer ${token}` // Enviamos el pase VIP
             },
             body: JSON.stringify(payload),
-            cache: 'no-store' // Obligamos a Next.js a no usar peticiones viejas oxidadas
+            cache: 'no-store'
         })
 
-        // Si la respuesta no es OK, tratamos de leer el error devuelto por la API
+        // 5. Manejo de errores que devuelva Node.js
         if (!res.ok) {
             const data = await res.json().catch(() => null)
-            const errorMsg = data?.message || data?.error || (typeof data === "string" ? data : `Error del servidor (${res.status})`)
+            const errorMsg = data?.error || data?.message || `Error del servidor (${res.status})`
             return { error: errorMsg }
         }
 
-        return {succes: true}
+        return { success: true }
+        
     } catch (err: any) {
         return {
-            error: "No se pudo conectar con el servidor. Si estuvo inactivo, puede demorar unos segundos en arrancar.",
+            error: "No se pudo conectar con el servidor. Revisá que Node.js esté corriendo.",
         }
     }
-
 }
 
-export async function loginUserAction(nombre: string, password: string) {
-    if (!nombre.trim() || !password) {
+export async function loginUserAction(email: string, password: string) {
+    console.log("👉 URL que está leyendo Next.js:", process.env.API_URL);
+    if (!email.trim() || !password) {
         return { error: "Por favor ingresá usuario y contraseña." }
     }
 
@@ -73,7 +128,7 @@ export async function loginUserAction(nombre: string, password: string) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                nombre: nombre.trim(),
+                email: email.trim(),
                 password,
             }),
         })
@@ -115,7 +170,7 @@ export async function loginUserAction(nombre: string, password: string) {
         return {
             success: true,
             role,
-            user: data?.user || { nombre: data?.nombre || nombre },
+            user: data?.user || { email: data?.email || email },
         }
     } catch (err: any) {
         return {
@@ -238,6 +293,7 @@ export async function getProductsAction() {
         })
         if (!res.ok) return { error: "Error al traer productos" }
         const data = await res.json()
+        console.log("¡ASÍ LLEGAN LOS DATOS DE NODE!", data)
         return { success: true, data }
     } catch (error) {
         return { error: "No se pudo conectar al servidor" }
@@ -349,3 +405,41 @@ export async function deleteProductAction(id: string | number) {
         return { error: "No se pudo conectar al servidor para eliminar." }
     }
 }
+
+export async function createSaleAction(cart: any[], total: number, tipo_medio: string) {
+    try {
+        // 1. El Server Action saca el token de la bóveda (las cookies)
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+
+        if (!token) {
+            return { success: false, error: "Tu sesión expiró. Volvé a iniciar sesión." }
+        }
+
+        // 2. Le pegamos a tu backend en Node.js
+        const apiUrl = process.env.API_URL || "http://localhost:3001"
+        
+        const res = await fetch(`${apiUrl}/api/Pagos`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` // ¡Acá le mostramos el DNI al patovica!
+            },
+            body: JSON.stringify({ cart, total, tipo_medio })
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            return { success: false, error: data.error || "Error al procesar el pago" }
+        }
+
+        return { success: true, data }
+
+    } catch (error) {
+        console.error("Error en el Server Action:", error)
+        return { success: false, error: "No se pudo conectar con el backend." }
+    }
+}
+
+

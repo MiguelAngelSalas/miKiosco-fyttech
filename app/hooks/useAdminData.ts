@@ -6,6 +6,20 @@ import { getProductsAction, getCategoriesAction, deleteProductAction } from "../
 import { Product } from "./useAddProduct" 
 import { Categoria } from "../components/EditProductModal" 
 
+export interface RawBackendProduct {
+    id_producto: number
+    nombre: string
+    codigo_barras: string
+    precio_venta: string | number
+    costo: string | number
+    stock: number
+    id_categoria: number
+}
+interface RawBackendCategoria{
+    id_categoria: string | number;
+    nombre_categoria: string;
+}
+
 export function useAdminData() {
     const router = useRouter()
     const [isAuthorized, setIsAuthorized] = useState(false)
@@ -32,16 +46,16 @@ export function useAdminData() {
                 getProductsAction(),
                 getCategoriesAction()
             ])
-
+            console.log("👉 Respuesta de categorías:", catRes);
             if (prodRes.success && prodRes.data) {
-                const productosAdaptados: Product[] = prodRes.data.map((p: any) => ({
-                    id_producto: p.id,
+                const productosAdaptados: Product[] = prodRes.data.map((p: RawBackendProduct) => ({
+                    id_producto: p.id_producto,
                     nombre: p.nombre,
-                    codigo_barras: p.codigoBarras,
-                    precio_venta: p.precioVenta,
-                    costo: p.precioCosto,
+                    codigo_barras: p.codigo_barras,
+                    precio_venta: p.precio_venta,
+                    costo: p.costo,
                     stock: p.stock,
-                    id_categoria: p.categoriaId
+                    id_categoria: p.id_categoria
                 }))
                 setProductos(productosAdaptados)
             } else {
@@ -49,9 +63,9 @@ export function useAdminData() {
             }
 
             if (catRes.success && catRes.data) {
-                const categoriasAdaptadas: Categoria[] = catRes.data.map((c: any) => ({
-                    id_categoria: c.id, 
-                    nombre_categoria: c.nombre
+                const categoriasAdaptadas: Categoria[] = catRes.data.map((c: RawBackendCategoria) => ({
+                    id_categoria: c.id_categoria, 
+                    nombre_categoria: c.nombre_categoria
                 }))
                 setCategorias(categoriasAdaptadas)
             }

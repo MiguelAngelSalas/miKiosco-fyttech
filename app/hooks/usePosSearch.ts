@@ -35,16 +35,16 @@ export function usePosSearch(productos: Product[], onAddProduct: (producto: Prod
         setSelectedIndex(-1)
     }
 
-    // El Mini Retraso (Debounce del Escáner)
+    // El Mini Retraso (Autocompletar si tipean el ID exacto)
     useEffect(() => {
         const query = searchTerm.trim().toLowerCase()
         if (!query) return;
 
         const timeoutId = setTimeout(() => {
+            // Buscamos si tipeó exactamente el ID (ej: "0015")
             const exactMatch = productos.find(item => {
-                const codigoBarrasReal = (item.codigo_barras || "").toLowerCase()
                 const codigoFormateado = String(item.id_producto).padStart(4, '0').toLowerCase()
-                return codigoBarrasReal === query || codigoFormateado === query
+                return codigoFormateado === query
             })
 
             if (exactMatch) handleSelectProduct(exactMatch)
@@ -54,17 +54,16 @@ export function usePosSearch(productos: Product[], onAddProduct: (producto: Prod
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, productos])
 
+    // Filtramos SOLO por nombre o por ID interno
     const productosFiltrados = searchTerm.trim() === "" ? [] : productos.filter(item => {
         const query = searchTerm.toLowerCase().trim()
         const nombre = (item.nombre || "").toLowerCase()
         const codigoFormateado = String(item.id_producto).padStart(4, '0').toLowerCase()
         const codigoCrudo = String(item.id_producto).toLowerCase()
-        const codigoBarras = (item.codigo_barras || "").toLowerCase()
         
         return nombre.includes(query) || 
                codigoFormateado.includes(query) || 
-               codigoCrudo.includes(query) || 
-               codigoBarras.includes(query)
+               codigoCrudo.includes(query)
     })
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -94,11 +93,11 @@ export function usePosSearch(productos: Product[], onAddProduct: (producto: Prod
                 return
             }
 
+            // Si apretó Enter tipeando el ID exacto
             const exactMatch = productos.find(item => {
-                const codigoBarrasReal = (item.codigo_barras || "").toLowerCase()
                 const codigoFormateado = String(item.id_producto).padStart(4, '0').toLowerCase()
                 const codigoCrudo = String(item.id_producto).toLowerCase()
-                return codigoBarrasReal === query || codigoFormateado === query || codigoCrudo === query
+                return codigoFormateado === query || codigoCrudo === query
             })
 
             if (exactMatch) {

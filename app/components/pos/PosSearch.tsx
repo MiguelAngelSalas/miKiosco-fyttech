@@ -12,16 +12,20 @@ interface PosSearchProps {
     productosFiltrados: Product[]
     selectedIndex: number
     handleSelectProduct: (producto: Product) => void
+    // 👇 1. Agregamos la prop para abrir el escáner
+    onOpenScanner: () => void 
 }
 
 export default function PosSearch({
     searchTerm, handleSearchChange, handleKeyDown, loadingData,
-    searchContainerRef, productosFiltrados, selectedIndex, handleSelectProduct
+    searchContainerRef, productosFiltrados, selectedIndex, handleSelectProduct,
+    onOpenScanner // 👇 La recibimos acá
 }: PosSearchProps) {
     return (
         <div className="relative w-full z-20" ref={searchContainerRef}>
             <TextField.Root 
-                placeholder="Buscar producto por nombre o escanear código de barras..." 
+                // 👇 2. Actualizamos el placeholder para que quede claro
+                placeholder="Buscar producto por nombre o ID (ej: 0012)..." 
                 size="3"
                 radius="large"
                 value={searchTerm}
@@ -32,8 +36,17 @@ export default function PosSearch({
                 <TextField.Slot>
                     {loadingData ? <Loader2 size={20} className="animate-spin text-gray-500" /> : <Search size={20} className="text-gray-500" />}
                 </TextField.Slot>    
+                
+                {/* 👇 3. Convertimos el ícono en un botón clickeable */}
                 <TextField.Slot side="right" className="pr-3">
-                    <Barcode size={24} className="text-gray-400" />
+                    <button 
+                        type="button" 
+                        onClick={onOpenScanner}
+                        className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-500 hover:text-[#33589c] dark:hover:text-[#589c33]"
+                        title="Escanear con cámara"
+                    >
+                        <Barcode size={24} />
+                    </button>
                 </TextField.Slot>
             </TextField.Root>
             

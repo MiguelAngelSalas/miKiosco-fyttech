@@ -105,9 +105,9 @@ export function useCart() {
     const totalItems = cart.reduce((acc, item) => acc + item.qty, 0)
 
     const itemsParaCheckout = cart.map(item => ({
-        idProducto: item.id_producto,
+        id_producto: item.id_producto,
         cantidad: item.qty,
-        precioUnitario: Number(item.precio_venta)
+        precio: Number(item.precio_venta)
     }))
 
     return {

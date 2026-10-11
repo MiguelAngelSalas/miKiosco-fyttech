@@ -93,7 +93,7 @@ export default function Login() {
                                     disabled={loading}
                                     value={inputUsername} 
                                     onChange={(e) => setInputUsername(e.target.value)} 
-                                    placeholder="Usuario"
+                                    placeholder="Email"
                                     required
                                     className="h-12 bg-gray-50 dark:bg-gray-900 border-gray-200 focus-within:border-[#33589c]"
                                 >

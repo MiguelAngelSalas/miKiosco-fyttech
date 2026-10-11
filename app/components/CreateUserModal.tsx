@@ -1,15 +1,15 @@
 "use client"
 
-import { Button, Flex, Text, TextField, Callout, Dialog, IconButton } from "@radix-ui/themes"
+import { Button, Flex, Text, TextField, Callout, Dialog, IconButton, Grid } from "@radix-ui/themes"
 import { AlertCircle, UserPlus, X, Save, Loader2 } from "lucide-react"
 import { useCreateUserModal } from "../hooks/useCreateUserModal"
 
 export default function CreateUserModal() {
-   const {open,errorMsg,loading,rolSeleccionado,setRolSeleccionado,handleSubmit, handleOpenChange} = useCreateUserModal()
+   const { open, errorMsg, loading, rolSeleccionado, setRolSeleccionado, handleSubmit, handleOpenChange } = useCreateUserModal()
 
     return (
         <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-            {/* --- BOTÓN DISPARADOR (Se ve en el AdminPanel) --- */}
+            {/* --- BOTÓN DISPARADOR --- */}
             <Dialog.Trigger>
                 <Button 
                     size="3" 
@@ -21,14 +21,14 @@ export default function CreateUserModal() {
             </Dialog.Trigger>
 
             {/* --- CONTENEDOR DEL MODAL --- */}
-            <Dialog.Content maxWidth="450px" className="!p-0 border border-gray-300 dark:border-gray-700 shadow-2xl rounded-2xl bg-white dark:bg-gray-900 overflow-hidden font-sans">
+            <Dialog.Content maxWidth="500px" className="!p-0 border border-gray-300 dark:border-gray-700 shadow-2xl rounded-2xl bg-white dark:bg-gray-900 overflow-hidden font-sans">
                 
                 {/* --- HEADER DEL MODAL --- */}
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                     <Flex align="center" gap="2">
                         <UserPlus className="text-[#33589c]" size={22} />
                         <Dialog.Title className="text-gray-900 dark:text-white font-bold m-0 text-lg">
-                            Crear Nuevo Usuario
+                            Crear Nuevo Empleado
                         </Dialog.Title>
                     </Flex>
                     <Dialog.Close>
@@ -48,7 +48,7 @@ export default function CreateUserModal() {
                     {/* --- CUERPO DEL MODAL --- */}
                     <div className="p-6 flex flex-col gap-5">
                         <Dialog.Description size="2" className="text-gray-600 dark:text-gray-400 m-0 leading-relaxed">
-                            Completá los datos para darle acceso a un nuevo cajero o administrador al sistema.
+                            Registrá un nuevo cajero o administrador secundario para que acceda al punto de venta de tu kiosco.
                         </Dialog.Description>
 
                         {errorMsg && (
@@ -60,25 +60,58 @@ export default function CreateUserModal() {
                             </Callout.Root>
                         )}
 
+                        <Grid columns="2" gap="4">
+                            <div>
+                                <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">
+                                    Nombre *
+                                </Text>
+                                <TextField.Root 
+                                    name="nombre" 
+                                    required 
+                                    placeholder="Ej: Juan" 
+                                    size="3" 
+                                    radius="large"
+                                    disabled={loading}
+                                    autoFocus
+                                    className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
+                                />
+                            </div>
+                            <div>
+                                <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">
+                                    Apellido *
+                                </Text>
+                                <TextField.Root 
+                                    name="apellido" 
+                                    required 
+                                    placeholder="Ej: Gómez" 
+                                    size="3" 
+                                    radius="large"
+                                    disabled={loading}
+                                    className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
+                                />
+                            </div>
+                        </Grid>
+
+                        {/* --- CAMPO DE EMAIL AGREGADO ACÁ --- */}
                         <div>
                             <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">
-                                Nombre de Usuario *
+                                Email *
                             </Text>
                             <TextField.Root 
-                                name="nombre" 
+                                name="email" 
+                                type="email"
                                 required 
-                                placeholder="Ej: juan_cajero" 
+                                placeholder="Ej: cajero@kiosco.com" 
                                 size="3" 
                                 radius="large"
                                 disabled={loading}
-                                autoFocus
                                 className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-sm focus-within:border-[#33589c]"
                             />
                         </div>
 
                         <div>
                             <Text as="label" size="2" className="mb-1.5 block text-gray-700 dark:text-gray-300 font-semibold">
-                                Contraseña *
+                                Contraseña de acceso *
                             </Text>
                             <TextField.Root 
                                 name="password" 
@@ -103,8 +136,8 @@ export default function CreateUserModal() {
                                 disabled={loading}
                                 className="w-full h-[40px] px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm shadow-sm focus:outline-none focus:border-[#33589c] focus:ring-1 focus:ring-[#33589c] transition-all disabled:opacity-50"
                             >
-                                <option value="0">Cajero</option>
-                                <option value="1">Administrador</option>
+                                <option value="cajero">Cajero (Solo ventas)</option>
+                                <option value="administrador">Administrador (Acceso total)</option>
                             </select>
                         </div>
                     </div>
@@ -128,9 +161,9 @@ export default function CreateUserModal() {
                             className="cursor-pointer bg-[#33589c] text-white hover:bg-[#28467b] shadow-sm"
                         >
                             {loading ? (
-                                <><Loader2 size={16} className="animate-spin mr-1" /> Registrando...</>
+                                <><Loader2 size={16} className="animate-spin mr-1" /> Creando...</>
                             ) : (
-                                <><Save size={16} className="mr-1" /> Crear Usuario</>
+                                <><Save size={16} className="mr-1" /> Crear Empleado</>
                             )}
                         </Button>
                     </div>

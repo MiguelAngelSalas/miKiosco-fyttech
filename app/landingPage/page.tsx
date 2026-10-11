@@ -85,6 +85,17 @@ export default function LandingPage() {
                                 Iniciar Sesión
                             </Button>
                         </Link>
+
+                        <Link href="/createUser" className="w-full sm:w-auto">
+                            <Button 
+                                size="4"
+                                radius="large"
+                                className="w-full cursor-pointer transition-all duration-200 hover:scale-[1.02] bg-gradient-to-r from-[#33589c] to-[#255286] text-white hover:shadow-lg font-bold h-14 px-8 text-base"
+                            >
+                                <LogIn size={20} className="mr-2" />
+                                Registrarme
+                            </Button>
+                        </Link>
                         
                         <Link href="#caracteristicas" className="w-full sm:w-auto">
                             <Button 

@@ -13,6 +13,7 @@ interface AddProductFormProps {
 export default function AddProductForm({ 
     handleSubmit, onClose, loading, categorias, onOpenCategoryModal 
 }: AddProductFormProps) {
+    console.log("Categorías que recibe el form:", categorias)
     return (
         <form onSubmit={handleSubmit} className="flex flex-col">
             {/* --- CUERPO --- */}

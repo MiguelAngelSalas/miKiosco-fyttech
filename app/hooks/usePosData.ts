@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { getProductsAction } from "../admin/actions"
 import { Product } from "./useCart"
+import { RawBackendProduct } from "./useAdminData"
+
 
 export function usePosData() {
     const router = useRouter()
@@ -24,14 +26,14 @@ export function usePosData() {
             const prodRes = await getProductsAction()
 
             if (prodRes.success && prodRes.data) {
-                const productosAdaptados: Product[] = prodRes.data.map((p: any) => ({
-                    id_producto: String(p.id),
+                const productosAdaptados: Product[] = prodRes.data.map((p: RawBackendProduct) => ({
+                    id_producto: p.id_producto,
                     nombre: p.nombre,
-                    codigo_barras: p.codigoBarras,
-                    precio_venta: p.precioVenta,
-                    costo: p.precioCosto,
+                    codigo_barras: p.codigo_barras,
+                    precio_venta: p.precio_venta,
+                    costo: p.costo,
                     stock: p.stock,
-                    id_categoria: String(p.categoriaId)
+                    id_categoria: p.id_categoria
                 }))
                 setProductos(productosAdaptados)
             } else {

@@ -1,29 +1,23 @@
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-import { registerUserAction } from "../admin/actions" // Ajustá la ruta según tu estructura
+import { registerAdminAction } from "../admin/actions" // El action SIN token
 
 export function useRegisterAdmin() {
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
-    const [rolSeleccionado, setRolSeleccionado] = useState("1") // Por defecto Administrador
+    const router = useRouter()
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         setErrorMsg(null)
-
-        // Validación exclusiva para el MVP de la facultad
-        if (rolSeleccionado === "0") {
-            toast.error("¡No podés crear una cuenta como cajero desde acá!")
-            return
-        }
-
         setLoading(true)
 
         const form = e.currentTarget
         const formData = new FormData(form)
 
         try {
-            const respuesta = await registerUserAction(formData)
+            const respuesta = await registerAdminAction(formData)
 
             if (respuesta?.error) {
                 setErrorMsg(respuesta.error)
@@ -32,29 +26,20 @@ export function useRegisterAdmin() {
                 return
             }
 
-            toast.success("Usuario administrador creado exitosamente")
-            // Acá podrías agregar un form.reset() si no redirige automáticamente
+            toast.success("¡Kiosco registrado exitosamente!")
+            router.push("/login") // Lo mandamos a loguearse
+            
         } catch (err: any) {
-            // Next.js tira un error interno cuando hacemos "redirect()" en el servidor, 
-            // lo atajamos acá para que no pinche la app.
-            if (err?.message === "NEXT_REDIRECT" || err?.digest?.startsWith("NEXT_REDIRECT")) {
-                toast.success("Usuario administrador creado exitosamente")
-                throw err
-            }
-
-            const errorMessage = err?.message || "Ocurrió un error inesperado al registrar"
+            const errorMessage = err?.message || "Ocurrió un error inesperado al registrar el negocio."
             setErrorMsg(errorMessage)
             toast.error(errorMessage)
             setLoading(false)
         }
     }
 
-    // Retornamos todo lo que la vista va a necesitar
     return {
         errorMsg,
         loading,
-        rolSeleccionado,
-        setRolSeleccionado,
         handleSubmit
     }
 }
