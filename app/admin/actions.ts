@@ -442,4 +442,165 @@ export async function createSaleAction(cart: any[], total: number, tipo_medio: s
     }
 }
 
+export async function abrirCajaAction(montoInicial: number) {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+
+        if (!token) {
+            return { success: false, error: "Tu sesión expiró. Volvé a iniciar sesión." }
+        }
+
+        const res = await fetch(`${API_URL}/api/Cajas/abrir`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ monto_inicial: montoInicial })
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            return { success: false, error: data.error || "Error al abrir la caja" }
+        }
+
+        return { success: true, data: data.caja }
+
+    } catch (error) {
+        console.error("Error en Server Action (Abrir Caja):", error)
+        return { success: false, error: "No se pudo conectar con el backend." }
+    }
+}
+
+export async function verificarEstadoCajaAction() {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+
+        if (!token) return { success: false, error: "No autenticado" }
+        
+        const res = await fetch(`${API_URL}/api/Cajas/estado`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+
+        if (!res.ok) throw new Error("Error al consultar el servidor")
+        
+        const data = await res.json()
+        return { success: true, abierta: data.abierta, caja: data.caja }
+
+    } catch (error) {
+        console.error("Error verificando caja:", error)
+        return { success: false, error: "Error de conexión." }
+    }
+}
+
+export async function obtenerResumenCajaAction() {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+
+        if (!token) return { success: false, error: "No autenticado" }
+
+        const res = await fetch(`${API_URL}/api/Cajas/resumen`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+
+        const textResponse = await res.text()
+        console.log("👀 RESPUESTA DEL SERVER:", textResponse) // Esto va a salir en tu terminal de Next.js
+
+        const data = JSON.parse(textResponse) // Acá va a volver a fallar, pero ya vimos el error arriba
+        if (!res.ok) throw new Error(data.error || "Error al obtener resumen")
+        
+        return { success: true, resumen: data.resumen }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+export async function cerrarCajaAction() {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+
+        if (!token) return { success: false, error: "No autenticado" }
+
+        const res = await fetch(`${API_URL}/api/Cajas/cerrar`, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Error al cerrar la caja")
+        
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+export async function obtenerHistorialCajasAction() {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+        if (!token) return { success: false, error: "No autenticado" }
+
+        const res = await fetch(`${API_URL}/api/Cajas/historial`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        return { success: true, cajas: data.cajas }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+export async function obtenerResumenCajaEspecificaAction(id_caja: string | number) {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+        if (!token) return { success: false, error: "No autenticado" }
+
+        const res = await fetch(`${API_URL}/api/Cajas/resumen/${id_caja}`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        return { success: true, resumen: data.resumen }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+export async function obtenerVentasPorCajaAction(id_caja: number) {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("kiosco_token")?.value
+        if (!token) return { success: false, error: "No autenticado" }
+
+        const res = await fetch(`${API_URL}/api/Cajas/${id_caja}/ventas`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        
+        return { success: true, ventas: data.ventas }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+
 

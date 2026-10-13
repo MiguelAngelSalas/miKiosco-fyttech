@@ -1,6 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { X, ScanLine, Camera, AlertCircle } from "lucide-react"
+import { IconButton, Text } from "@radix-ui/themes"
+import { useScannerCamera } from "@/app/hooks/useScannerCamera" // Ajustá la ruta según tu carpeta
 
 interface BarcodeScannerProps {
     onScanSuccess: (decodedText: string) => void
@@ -8,49 +9,55 @@ interface BarcodeScannerProps {
 }
 
 export default function BarcodeScanner({ onScanSuccess, onClose }: BarcodeScannerProps) {
-    const [scanError, setScanError] = useState<string | null>(null)
-
-    useEffect(() => {
-        // Configuramos el escáner para que use la cámara trasera por defecto
-        const scanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 150 } }, // Un rectángulo apaisado ideal para códigos de barra
-            false
-        )
-
-        scanner.render(
-            (decodedText) => {
-                // ¡Éxito! Encontró un código
-                scanner.clear() // Apagamos la cámara
-                onScanSuccess(decodedText) // Le mandamos el número a tu POS
-            },
-            (error) => {
-                // Es normal que tire errores mientras enfoca, los ignoramos o guardamos para debug
-                // setScanError(error?.message) 
-            }
-        )
-
-        // Limpieza: si el usuario cierra el modal, apagamos la cámara
-        return () => {
-            scanner.clear().catch(error => console.error("Error al limpiar el escáner", error))
-        }
-    }, [onScanSuccess])
+    // 👇 Toda la magia de encender, apagar y manejar errores viene de acá
+    const { permisoDenegado } = useScannerCamera(onScanSuccess)
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-            <div className="bg-white p-4 rounded-lg shadow-xl w-[90%] max-w-md relative">
-                <button 
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-red-500 font-bold"
-                >
-                    X Cerrar
-                </button>
-                <h3 className="text-lg font-bold mb-2 text-center text-gray-800">Escaneá el código</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                 
-                {/* Acá adentro la librería inyecta el video de la cámara */}
-                <div id="reader" className="w-full"></div>
-                
-                {scanError && <p className="text-xs text-red-500 text-center mt-2">Enfocando...</p>}
+                {/* --- HEADER --- */}
+                <div className="bg-[#33589c] text-white p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Camera size={20} />
+                        <Text weight="bold" size="3">Escanear Código</Text>
+                    </div>
+                    <IconButton 
+                        size="2" 
+                        variant="ghost" 
+                        className="text-white hover:bg-white/20 cursor-pointer rounded-full"
+                        onClick={onClose}
+                    >
+                        <X size={20} />
+                    </IconButton>
+                </div>
+
+                {/* --- CUERPO --- */}
+                <div className="p-4 flex flex-col items-center">
+                    
+                    {permisoDenegado ? (
+                        <div className="text-center p-6 text-red-500 flex flex-col items-center">
+                            <AlertCircle size={40} className="mb-2" />
+                            <Text size="3" weight="bold">Cámara bloqueada</Text>
+                            <Text size="2" className="mt-2 text-gray-600 dark:text-gray-400">
+                                Por favor, dale permisos a tu navegador para usar la cámara y volvé a intentar.
+                            </Text>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Acá se inyecta SOLO el video */}
+                            <div 
+                                id="reader" 
+                                className="w-full rounded-xl overflow-hidden shadow-inner bg-black"
+                            ></div>
+
+                            <div className="mt-4 flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <ScanLine size={18} />
+                                <Text size="2">Alineá el código dentro del recuadro</Text>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     )

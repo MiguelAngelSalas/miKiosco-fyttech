@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import toast from "react-hot-toast"
+import { Tabs } from "@radix-ui/themes" // 👈 1. Importamos Tabs
 import { useAdminData } from "../hooks/useAdminData"
 
 // Modales
@@ -13,20 +14,20 @@ import AdminHeader from "@/app/components/admin/AdminHeader"
 import AdminToolbar from "@/app/components/admin/AdminToolbar"
 import AdminTable from "@/app/components/admin/AdminTable"
 
+// 👇 2. Importamos nuestro panel de historial de cajas
+import PanelHistorialCajas from "./PanelHistorialCaja" 
+
 export default function AdminPanel() {
-    // 1. Datos gestionados por el hook
     const { 
         isAuthorized, loadingData, productos, setProductos, 
         categorias, setCategorias, handleDeleteProduct 
     } = useAdminData()
     
-    // 2. Estados Locales UI
     const [searchTerm, setSearchTerm] = useState("")
     const [editingProduct, setEditingProduct] = useState<any | null>(null)
     const [isAddOpen, setIsAddOpen] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
-    // 3. Filtrado de Tabla
     const productosFiltrados = productos.filter((item) => {
         const query = searchTerm.toLowerCase().trim()
         if (!query) return true 
@@ -43,18 +44,38 @@ export default function AdminPanel() {
             
             <AdminHeader />
 
-            <AdminToolbar 
-                searchTerm={searchTerm} 
-                setSearchTerm={setSearchTerm} 
-                onOpenAddProduct={() => setIsAddOpen(true)} 
-            />
+            {/* 👇 3. ENVOLVEMOS EL CONTENIDO EN TABS (Pestañas) */}
+            <Tabs.Root defaultValue="productos">
+                <Tabs.List size="2" className="mb-6">
+                    <Tabs.Trigger value="productos" className="cursor-pointer font-bold">
+                        📦 Gestión de Productos
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="cajas" className="cursor-pointer font-bold">
+                        💰 Historial de Cajas y PDFs
+                    </Tabs.Trigger>
+                </Tabs.List>
 
-            <AdminTable 
-                productosFiltrados={productosFiltrados}
-                loadingData={loadingData}
-                handleOpenEdit={(item) => setEditingProduct(item)}
-                handleDeleteProduct={handleDeleteProduct}
-            />
+                {/* PESTAÑA 1: PRODUCTOS (Todo lo que ya tenías) */}
+                <Tabs.Content value="productos" className="flex flex-col gap-6">
+                    <AdminToolbar 
+                        searchTerm={searchTerm} 
+                        setSearchTerm={setSearchTerm} 
+                        onOpenAddProduct={() => setIsAddOpen(true)} 
+                    />
+
+                    <AdminTable 
+                        productosFiltrados={productosFiltrados}
+                        loadingData={loadingData}
+                        handleOpenEdit={(item) => setEditingProduct(item)}
+                        handleDeleteProduct={handleDeleteProduct}
+                    />
+                </Tabs.Content>
+
+                {/* PESTAÑA 2: CAJAS (El nuevo panel que armamos) */}
+                <Tabs.Content value="cajas">
+                    <PanelHistorialCajas />
+                </Tabs.Content>
+            </Tabs.Root>
 
             {/* --- ZONA DE MODALES --- */}
             <EditProductModal 

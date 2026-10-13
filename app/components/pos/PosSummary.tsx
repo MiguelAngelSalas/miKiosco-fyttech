@@ -1,17 +1,18 @@
-import { Heading, Card, Flex, Text } from "@radix-ui/themes"
-import { Receipt } from "lucide-react"
-import ButtonCheckOut from "@/app/components/ButtonCheckOut" // Ajustá la ruta si está en otra carpeta
+import { Heading, Card, Flex, Text, Button } from "@radix-ui/themes" // 👈 Agregamos Button de Radix
+import { Receipt, Lock } from "lucide-react" // 👈 Agregamos el icono Lock (candado)
+import ButtonCheckOut from "@/app/components/ButtonCheckOut"
 
 interface PosSummaryProps {
     totalItems: number
     subTotal: number
     subTotalFormateado: string
-    itemsParaCheckout: any[] // Podés definir la interfaz exacta de los items de checkout si querés
+    itemsParaCheckout: any[] 
     vaciarCarrito: () => void
+    estadoCaja?: 'verificando' | 'abierta' | 'cerrada' // 👈 1. Agregamos el estado a las props
 }
 
 export default function PosSummary({ 
-    totalItems, subTotal, subTotalFormateado, itemsParaCheckout, vaciarCarrito 
+    totalItems, subTotal, subTotalFormateado, itemsParaCheckout, vaciarCarrito, estadoCaja 
 }: PosSummaryProps) {
     return (
         <Card className="w-full lg:w-[380px] border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 rounded-2xl flex flex-col justify-between shadow-md sticky top-6">
@@ -48,12 +49,24 @@ export default function PosSummary({
                 </div>
             </Flex>
             
+            {/* 👇 2. ACÁ ESTÁ LA MAGIA DEL BOTÓN BLOQUEADO */}
             <div className="mt-6">
-                <ButtonCheckOut 
-                    subTotal={subTotalFormateado} 
-                    items={itemsParaCheckout} 
-                    onClearCart={vaciarCarrito} 
-                />
+                {estadoCaja === 'cerrada' ? (
+                    <Button 
+                        size="4" 
+                        disabled 
+                        className="w-full bg-gray-400 dark:bg-gray-700 text-white font-bold cursor-not-allowed text-lg flex items-center justify-center"
+                    >
+                        <Lock size={18} className="mr-2" /> 
+                        Abrí la caja para cobrar
+                    </Button>
+                ) : (
+                    <ButtonCheckOut 
+                        subTotal={subTotalFormateado} 
+                        items={itemsParaCheckout} 
+                        onClearCart={vaciarCarrito} 
+                    />
+                )}
             </div>
         </Card>
     )
