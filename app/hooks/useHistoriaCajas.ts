@@ -38,8 +38,9 @@ export function useHistorialCajas() {
     const formatearFecha = (fecha: string) => {
         if (!fecha) return "---"
         const date = new Date(fecha)
-        date.setHours(date.getHours() - 3)
-        return date.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+        
+        // Sin restar nada, dejamos que toscamente muestre lo que trae
+        return date.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short', hour12: false })
     }
 
     const descargarPDF = async (id_caja: number) => {
