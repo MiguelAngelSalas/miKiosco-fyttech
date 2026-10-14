@@ -51,7 +51,7 @@ export default function ModalDetalleVentas({
                                     <Table.Row key={venta.id_pago}>
                                         <Table.RowHeaderCell>#{venta.id_pago}</Table.RowHeaderCell>
                                         <Table.Cell className="text-gray-500">{formatearFecha(venta.hora)}</Table.Cell>
-                                        <Table.Cell className="font-medium capitalize text-gray-700">{venta.cajero || "---"}</Table.Cell>
+                                        <Table.Cell className="font-medium capitalize text-white-700">{venta.cajero || "---"}</Table.Cell>
                                         <Table.Cell>
                                             <Badge color={
                                                 venta.tipo_medio.toLowerCase() === 'efectivo' ? 'green' : 
