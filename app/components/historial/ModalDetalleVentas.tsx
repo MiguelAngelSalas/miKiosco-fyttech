@@ -50,7 +50,7 @@ export default function ModalDetalleVentas({
                                 {ventas.map((venta: any) => (
                                     <Table.Row key={venta.id_pago}>
                                         <Table.RowHeaderCell>#{venta.id_pago}</Table.RowHeaderCell>
-                                        <Table.Cell className="text-gray-500">{formatearFecha(venta.fecha_pago)}</Table.Cell>
+                                        <Table.Cell className="text-gray-500">{formatearFecha(venta.hora)}</Table.Cell>
                                         <Table.Cell className="font-medium capitalize text-gray-700">{venta.cajero || "---"}</Table.Cell>
                                         <Table.Cell>
                                             <Badge color={

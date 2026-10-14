@@ -591,8 +591,10 @@ export async function obtenerVentasPorCajaAction(id_caja: number) {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         })
+        const textResponse = await res.text()
+        console.log("👀 RESPUESTA DEL SERVER:", textResponse) // Esto va a salir en tu terminal de Next.js
 
-        const data = await res.json()
+        const data = JSON.parse(textResponse) 
         if (!res.ok) throw new Error(data.error)
         
         return { success: true, ventas: data.ventas }
