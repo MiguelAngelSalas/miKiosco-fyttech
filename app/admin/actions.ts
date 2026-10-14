@@ -417,9 +417,8 @@ export async function createSaleAction(cart: any[], total: number, tipo_medio: s
         }
 
         // 2. Le pegamos a tu backend en Node.js
-        const apiUrl = process.env.API_URL || "http://localhost:3001"
         
-        const res = await fetch(`${apiUrl}/api/Pagos`, {
+        const res = await fetch(`${API_URL}/api/Pagos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
